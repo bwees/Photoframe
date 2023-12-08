@@ -3,7 +3,10 @@ FROM python:3.9-slim
 WORKDIR /app
 COPY requirements.txt .
 
-RUN pip3 install -r requirements.txt --extra-index-url https://www.piwheels.org/simple
+RUN add-apt-repository ppa:strukturag/libheif
+RUN apt update
+RUN apt -y install libheif-dev
+RUN pip3 install -r requirements.txt --no-binary :all:
 
 COPY . .
 
