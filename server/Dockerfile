@@ -1,11 +1,9 @@
-FROM python:3.9-slim
+FROM python:3.8-alpine
 
 WORKDIR /app
 COPY requirements.txt .
 
-RUN add-apt-repository ppa:strukturag/libheif
-RUN apt update
-RUN apt -y install libheif-dev
+RUN apk add --no-cache libheif-dev zlib-dev jpeg-dev gcc musl-dev
 RUN pip3 install -r requirements.txt --no-binary :all:
 
 COPY . .
