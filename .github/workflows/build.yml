@@ -34,7 +34,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./server
-          file: ./Dockerfile
+          file: ./server/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
