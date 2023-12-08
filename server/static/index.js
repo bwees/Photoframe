@@ -59,7 +59,6 @@ function changeDate(id, input) {
 }
 
 // CROP IMAGE HANDLING
-
 document.getElementById('upload').onchange = function () {
     if (this.files && this.files[0]) {
         var reader = new FileReader();
