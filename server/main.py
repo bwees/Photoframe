@@ -136,6 +136,7 @@ def get_image(img_id):
 
 @app.route("/api/wakeup")
 def wakeup():
+
     now = datetime.datetime.now()
 
     # get tomorrow at 3am
@@ -144,10 +145,7 @@ def wakeup():
     # get the difference in seconds
     delta_t = t_wakeup - now
 
-    # convert to uS
-    delta_t = int(delta_t.total_seconds()) * 1000000
-
-    return str(delta_t)
+    return str(int(delta_t.total_seconds()))
 
 
 if __name__ == '__main__':
