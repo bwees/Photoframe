@@ -8,6 +8,7 @@ import re
 import dithering
 import datetime
 from io import BytesIO
+import datetime
 
 register_heif_opener()
 app = Flask(__name__)
@@ -132,6 +133,22 @@ def get_image(img_id):
         os.remove("static/images/" + img_id + ".bmp")
 
     return "OK"
+
+@app.route("/api/wakeup")
+def wakeup():
+    now = datetime.datetime.now()
+
+    # get tomorrow at 3am
+    t_wakeup = now.replace(day=now.day+1, hour=3, minute=0, second=0, microsecond=0)
+
+    # get the difference in seconds
+    delta_t = t_wakeup - now
+
+    # convert to uS
+    delta_t = int(delta_t.total_seconds()) * 1000000
+
+    return str(delta_t)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000, host="0.0.0.0")
