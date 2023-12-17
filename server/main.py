@@ -147,6 +147,17 @@ def wakeup():
 
     return str(int(delta_t.total_seconds()))
 
+@app.route("/api/within")
+def within():
+    # check if current time is +- 30 mins of 3:00 AM
+    now = datetime.datetime.now()
+
+    if now.hour == 5 and now.minute < 30:
+        return "0"
+    elif now.hour == 4 and now.minute > 30:
+        return "0"
+
+    return "1"
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000, host="0.0.0.0")
