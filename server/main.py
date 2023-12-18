@@ -152,9 +152,9 @@ def within():
     # check if current time is +- 30 mins of 3:00 AM
     now = datetime.datetime.now()
 
-    if now.hour == 5 and now.minute < 30:
+    if now.hour == 3 and now.minute < 30:
         return "0"
-    elif now.hour == 4 and now.minute > 30:
+    elif now.hour == 2 and now.minute > 30:
         return "0"
 
     return "1"
