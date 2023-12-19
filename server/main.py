@@ -147,17 +147,22 @@ def wakeup():
 
     return str(int(delta_t.total_seconds()))
 
-@app.route("/api/within")
-def within():
+@app.route("/api/preflight")
+def preflight():
+    # verify we have an image
+    today = str(datetime.datetime.now().date())
+    if not os.path.exists("static/images/" + today + ".bmp"):
+        return "0"
+
     # check if current time is +- 30 mins of 3:00 AM
     now = datetime.datetime.now()
 
     if now.hour == 3 and now.minute < 30:
-        return "0"
+        return "1"
     elif now.hour == 2 and now.minute > 30:
-        return "0"
+        return "1"
 
-    return "1"
+    return "0"
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000, host="0.0.0.0")
