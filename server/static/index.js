@@ -47,7 +47,7 @@ fetch("/api/images").then((response) => {
 
             //  if the image date is in the past, add to past list, otherwise add to upcoming list
             // only check if date is in the past, not if it is today
-            if (new Date(image) < new Date(new Date().toISOString().split("T")[0])) {
+            if (new Date(image.date) < new Date(new Date().toISOString().split("T")[0])) {
                 imagePastList.innerHTML += htmlData
                 imageCounter.past++
             } else {
