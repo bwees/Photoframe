@@ -2,15 +2,14 @@
 from flask import Flask, request, redirect, url_for, send_file
 from PIL import Image, ImageOps
 import PIL
-from pillow_heif import register_heif_opener
 import os
 import re
 import dithering
 import datetime
 from io import BytesIO
 import datetime
+import multiprocessing
 
-register_heif_opener()
 app = Flask(__name__)
 
 date_regex = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", re.IGNORECASE)
@@ -68,6 +67,34 @@ def send_thumbnail(img_id):
     i = Image.open("static/images/" + img_id + ".bmp")
     return serve_pil_image(i)
 
+def process_image(input_image):
+    image = ImageOps.exif_transpose(input_image)
+
+    save_date = find_next_date()
+
+    # create an empty file with the date as the name and .tmp as the extension
+    open("static/images/" + save_date + ".tmp", "w").close()
+
+
+    # crop to a 600:448 aspect ratio from center
+    if image.width / image.height > 600/448:
+        image = image.crop((int(image.width/2 - image.height * 600/448/2), 0, int(image.width/2 + image.height * 600/448/2), image.height))
+    else:
+        image = image.crop((0, int(image.height/2 - image.width * 448/600/2), image.width, int(image.height/2 + image.width * 448/600/2)))
+
+    image = image.resize((600, 448))
+
+    processed = dithering.process(image, color_table)
+
+
+    if not os.path.exists("static/images"):
+        os.mkdir("static/images")
+
+    processed.save("static/images/" + save_date + ".bmp")
+
+    # remove the .tmp file
+    os.remove("static/images/" + save_date + ".tmp")
+
 @app.route('/uploader', methods = ['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -78,38 +105,27 @@ def upload_file():
         except PIL.UnidentifiedImageError:
             return redirect(url_for('index'))
 
-        image = ImageOps.exif_transpose(image)
-
-        # crop to a 600:448 aspect ratio from center
-        if image.width / image.height > 600/448:
-            image = image.crop((int(image.width/2 - image.height * 600/448/2), 0, int(image.width/2 + image.height * 600/448/2), image.height))
-        else:
-            image = image.crop((0, int(image.height/2 - image.width * 448/600/2), image.width, int(image.height/2 + image.width * 448/600/2)))
-
-        image = image.resize((600, 448))
-
-        processed = dithering.process(image, color_table)
-
-
-        if not os.path.exists("static/images"):
-            os.mkdir("static/images")
-
-        processed.save("static/images/" + find_next_date() + ".bmp")
+        multiprocessing.Process(target=process_image, args=(image,)).start()
     
     return redirect(url_for('index'))
 
 @app.route("/api/images")
 def get_images():
 
-    images = []
+    returnData = []
+
     # get all images from images folder
     for i in os.listdir("static/images"):
-        if i.split(".")[1] == "bmp":
-            images.append(i.split(".")[0])
+        img = {
+            "date": i.split(".")[0],
+            "complete": i.split(".")[1] == "bmp"
+        }
 
-    images.sort()
+        returnData.append(img)
+        
+    returnData = sorted(returnData, key=lambda x: x["date"])
     
-    return images
+    return returnData
 
 @app.route("/api/today")
 def get_today():
@@ -157,9 +173,9 @@ def preflight():
     # check if current time is +- 30 mins of 3:00 AM
     now = datetime.datetime.now()
 
-    if now.hour == 3 and now.minute < 30:
+    if now.hour == 12+9 and now.minute < 30:
         return "1"
-    elif now.hour == 2 and now.minute > 30:
+    elif now.hour == 12+8 and now.minute > 30:
         return "1"
 
     return "0"
