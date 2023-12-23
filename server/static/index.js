@@ -76,7 +76,7 @@ function changeDate(id, input) {
     // check for date conflict with loadedData
     const dateCheck = new Date(input.value)
     const conflict = loadedData.find((image) => {
-        return new Date(image) - dateCheck === 0
+        return new Date(image.date) - dateCheck === 0
     })
 
     if (conflict) {
