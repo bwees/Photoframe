@@ -172,10 +172,11 @@ def preflight():
 
     # check if current time is +- 30 mins of 3:00 AM
     now = datetime.datetime.now()
+    t_wakeup = int(os.environ.get("WAKEUP_TIME", "3"))
 
-    if now.hour == 12+9 and now.minute < 30:
+    if now.hour == t_wakeup and now.minute < 30:
         return "1"
-    elif now.hour == 12+8 and now.minute > 30:
+    elif now.hour == t_wakeup+1 and now.minute > 30:
         return "1"
 
     return "0"
