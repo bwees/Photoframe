@@ -168,19 +168,18 @@ def preflight():
     # verify we have an image
     today = str(datetime.datetime.now().date())
     if not os.path.exists("static/images/" + today + ".bmp"):
-        print("No")
         return "0"
 
-    # check if current time is +- 30 mins of 3:00 AM
-    now = datetime.datetime.now()
-    t_wakeup = int(os.environ.get("WAKEUP_TIME", "3"))
+    # # check if current time is +- 30 mins of 3:00 AM
+    # now = datetime.datetime.now()
+    # t_wakeup = int(os.environ.get("WAKEUP_TIME", "3"))
 
-    if now.hour == t_wakeup and now.minute < 30:
-        return "1"
-    elif now.hour == t_wakeup-1 and now.minute > 30:
-        return "1"
+    # if now.hour == t_wakeup and now.minute < 30:
+    #     return "1"
+    # elif now.hour == t_wakeup-1 and now.minute > 30:
+    #     return "1"
 
-    return "0"
+    return "1"
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000, host="0.0.0.0")
