@@ -131,6 +131,7 @@ def get_images():
 def get_today():
     # get image for today
     today = str(datetime.datetime.now().date())
+    print(today)
     if not os.path.exists("static/images/" + today + ".bmp"):
         return "No image for today"
     
@@ -156,7 +157,7 @@ def wakeup():
     now = datetime.datetime.now()
 
     # get tomorrow at 3am
-    t_wakeup = now.replace(day=now.day+1, hour=3, minute=0, second=0, microsecond=0)
+    t_wakeup = now.replace(day=now.day+1, hour=5, minute=0, second=0, microsecond=0)
 
     # get the difference in seconds
     delta_t = t_wakeup - now
@@ -167,6 +168,7 @@ def wakeup():
 def preflight():
     # verify we have an image
     today = str(datetime.datetime.now().date())
+    print(today)
     if not os.path.exists("static/images/" + today + ".bmp"):
         return "0"
 
