@@ -26,6 +26,8 @@ VCC -> 3.3V
 
 Connect the battery to the BAT+ and BAT- pads on the back of the XIAO
 
+Upload the firmware using PlatformIO in the `firmware/` directory. You will need to configure the API endpoints and ports for your web server. Look for any instance of `frame.bwees.home` to change the server path and the comment `// CHANGE "80" TO THE PORT YOUR WEBSERVER USES` to change from the default HTTP port if your webserver uses a nonstandard port.
+
 ## Software
 
 Using Docker Compose:
