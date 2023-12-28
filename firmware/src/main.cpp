@@ -44,8 +44,6 @@
 
 const char* ssid     = "Wifi";
 const char* password = "password";
-// const char* ssid     = "Brandon iPhone";
-// const char* password = "test1234";
 
 
 // note that BMP bitmaps are drawn at physical position in physical orientation of the screen
@@ -273,7 +271,7 @@ bool drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x,
   }
   display.fillScreen(GxEPD_WHITE);
   Serial.print("connecting to "); Serial.println(host);
-  if (!client.connect(host, 80))
+  if (!client.connect(host, 80)) // CHANGE "80" TO THE PORT YOUR WEBSERVER USES
   {
     Serial.println("connection failed");
     return false;
