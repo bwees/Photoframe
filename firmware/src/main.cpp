@@ -38,18 +38,12 @@
 #include "GxEPD2_display_selection_new_style.h"
 #include <SPI.h>
 
-#include <chrono>
-
-#ifdef ESP8266
-#include <ESP8266WiFi.h>
-#endif
-
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 
-const char* ssid     = "ABKK Network";
-const char* password = "basicphoenix024";
+const char* ssid     = "Wifi";
+const char* password = "password";
 // const char* ssid     = "Brandon iPhone";
 // const char* password = "test1234";
 
@@ -265,7 +259,7 @@ uint8_t mono_palette_buffer[max_palette_pixels / 8]; // palette buffer for depth
 uint8_t color_palette_buffer[max_palette_pixels / 8]; // palette buffer for depth <= 8 c/w
 uint16_t rgb_palette_buffer[max_palette_pixels]; // palette buffer for depth <= 8 for buffered graphics, needed for 7-color display
 
-void drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x, int16_t y, bool with_color)
+bool drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x, int16_t y, bool with_color)
 {
   WiFiClient client;
   bool connection_ok = false;
@@ -273,13 +267,16 @@ void drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x,
   bool flip = true; // bitmap is stored bottom-to-top
   bool has_multicolors = (display.epd2.panel == GxEPD2::ACeP565) || (display.epd2.panel == GxEPD2::GDEY073D46);
   uint32_t startTime = millis();
-  if ((x >= display.width()) || (y >= display.height())) return;
+  if ((x >= display.width()) || (y >= display.height())) {
+    Serial.println("Coordinates outside of screen");
+    return false;
+  }
   display.fillScreen(GxEPD_WHITE);
   Serial.print("connecting to "); Serial.println(host);
   if (!client.connect(host, 80))
   {
     Serial.println("connection failed");
-    return;
+    return false;
   }
   Serial.print("requesting URL: ");
   Serial.println(String("http://") + host + path);
@@ -307,7 +304,10 @@ void drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x,
     }
   }
 
-  if (!connection_ok) return;
+  if (!connection_ok) {
+    Serial.println("connection failed");
+    return false;
+  }
   uint8_t buffer[4];
   
   #ifdef ESP8266
@@ -421,7 +421,7 @@ void drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x,
             if (!connection_ok)
             {
               Serial.print("Error: got no more after "); Serial.print(bytes_read); Serial.println(" bytes read!");
-              break;
+              return false;
             }
             switch (depth)
             {
@@ -512,7 +512,10 @@ void drawBitmapFrom_HTTP_ToBuffer(const char* host, const char* path, int16_t x,
   if (!valid)
   {
     Serial.println("bitmap format not handled.");
+    return false;
   }
+
+  return true;
 }
 
 void showBitmapFrom_HTTP_Buffered(const char* host, const char* path, int16_t x, int16_t y, bool with_color)
@@ -521,7 +524,16 @@ void showBitmapFrom_HTTP_Buffered(const char* host, const char* path, int16_t x,
   display.firstPage();
   do
   {
-    drawBitmapFrom_HTTP_ToBuffer(host, path, x, y, with_color);
+    for (int retry = 3; retry; retry--)
+    {
+      if (drawBitmapFrom_HTTP_ToBuffer(host, path, x, y, with_color)) break;
+      Serial.println("Failed to load bitmap, retrying");
+
+      if (retry == 1) {
+        Serial.println("Failed to load bitmap, sleeping as to not corrupt screen");
+        calc_deep_sleep();
+      }
+    }
   }
   while (display.nextPage());
 }
