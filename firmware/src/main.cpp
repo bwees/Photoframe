@@ -100,25 +100,8 @@ void setup()
   // verify we should show image
   preflight();
 
+  // show image
   showBitmapFrom_HTTP_Buffered("frame.bwees.home", "/api/today", 0 , 0, true);
-
-  display.end();
-  SPI.end();
-
-  digitalWrite(D2, LOW);
-  digitalWrite(D3, LOW);
-  digitalWrite(D4, LOW);
-  digitalWrite(D5, LOW);
-  digitalWrite(D6, LOW);
-  digitalWrite(D10, LOW);
-
-  gpio_hold_en(GPIO_NUM_3);
-  gpio_hold_en(GPIO_NUM_4);
-  gpio_hold_en(GPIO_NUM_5);
-  gpio_hold_en(GPIO_NUM_6);
-  gpio_hold_en(GPIO_NUM_43); // D6
-  gpio_hold_en(GPIO_NUM_9);
-  gpio_deep_sleep_hold_en();
 
   calc_deep_sleep();
 }
@@ -171,24 +154,27 @@ void calc_deep_sleep() {
   HTTPClient http;
   http.begin("http://frame.bwees.home/api/wakeup"); //HTTP
   int httpCode = http.GET();
+  int sleepTime = 10800; // 3 hours
 
-
-  if (httpCode > 0) {
+  if (httpCode == 200) {
     String payload = http.getString();
     long sleepTimeSec = payload.toInt();
     Serial.print("Sleeping for ");
     Serial.print(sleepTimeSec);
-    Serial.print(" seconds which is (uS): ");
-    Serial.println(sleepTimeSec * 1000000ULL);
+    Serial.print(" seconds which is (mS): ");
+    Serial.println(sleepTimeSec * 1000);
     http.end();
-
-    esp_sleep_enable_timer_wakeup(sleepTimeSec * 1000000ULL);
-    esp_deep_sleep_start();
+    
+    sleepTime = sleepTimeSec;
   } else {
     Serial.println("Error deep sleeping, sleeping for 3 hours");
-    esp_sleep_enable_timer_wakeup(3600 * 3 * 1000000ULL);
-    esp_deep_sleep_start();
   }
+  
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  delay(sleepTime * 1000);
+  // reset esp to simulate deep sleep wakeup
+  ESP.restart(); 
 }
 
 uint16_t read16(WiFiClient& client)
